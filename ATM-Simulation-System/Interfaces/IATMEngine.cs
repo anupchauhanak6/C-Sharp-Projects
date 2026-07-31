@@ -24,6 +24,6 @@ namespace Interfaces
         /// 
         /// </summary>
         /// <param name="transaction">Polymorphic transaction object (ITransaction)</param>
-        void ProcessTransactioin(ITransaction transaction);
+        void ProcessTransaction(ITransaction transaction);
     }
 }
