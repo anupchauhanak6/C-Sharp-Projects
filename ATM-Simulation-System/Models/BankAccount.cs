@@ -21,7 +21,7 @@ namespace Models
         }
 
         // get balance
-        public decimal GetBalance(decimal amount)
+        public decimal GetBalance()
         {
             return _balance;
         }
