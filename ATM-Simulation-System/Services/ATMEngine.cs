@@ -3,13 +3,15 @@ using System.IO.Pipelines;
 using Exceptions;
 using Interfaces;
 using Models;
+using Transactions;
+using UI;
 
 namespace Services
 {
     public class  ATMEngine : IATMEngine
     {
         // Dummy Account
-        private readonly BankAccount[] _account;
+        private readonly BankAccount[] _accounts;
         private BankAccount _currentAccount;
 
         // UI Helper
@@ -25,7 +27,7 @@ namespace Services
             User user1 = new User("U101", "Rahul Sharma", "9876543210");
             User user2 = new User("U102", "Priya Verma", "9123456789");
 
-            _account = new BankAccount[]
+            _accounts = new BankAccount[]
             {
                 new BankAccount("ACC1001", 10000.00m, "1234", user1),
                 new BankAccount("ACC1002", 5000.00m, "4321", user2)
@@ -50,11 +52,11 @@ namespace Services
             }
         }
 
-        public bool AuthenticateUser(string accountNumebr, string pin)
+        public bool AuthenticateUser(string accountNumeber, string pin)
         {
             foreach (var account in _accounts)
             {
-                if (account.AccountNumber == accountNumber && account.ValidatePin(pin))
+                if (account.AccountNumber == accountNumeber && account.ValidatePin(pin))
                 {
                     _currentAccount = account;
                     return true;
@@ -79,6 +81,11 @@ namespace Services
                         break;
                     case 2:
                         decimal depositAmount = _inputReader.ReadDecimal("Enter amount to deposit: ");
+                        ProcessTransaction(new DepositTransaction(depositAmount));
+                        break;
+
+                    case 3:
+                        decimal withdrawAmount = _inputReader.ReadDecimal("Enter amount to withdraw: ");
                         ProcessTransaction(new WithdrawTransaction(withdrawAmount));
                         break;
                     case 4:
