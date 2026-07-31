@@ -6,10 +6,10 @@ class Program
 {
     public static void Main(string[] args)
     {
-        // ATM Engine ka instance create kar rahe hain
+            // Creating an instance of the ATM engine.
             ATMEngine atmEngine = new ATMEngine();
 
-            // Application flow ko trigger kar rahe hain
+            // Triggering the application flow.
             atmEngine.Start();
     }
 }
