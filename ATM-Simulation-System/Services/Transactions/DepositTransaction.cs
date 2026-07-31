@@ -2,7 +2,7 @@ using System;
 using Interfaces;
 using Models;
 
-namespace ATM.ConsoleApp.Services.Transactions
+namespace Transactions
 {
     public class DepositTransaction : ITransaction
     {
