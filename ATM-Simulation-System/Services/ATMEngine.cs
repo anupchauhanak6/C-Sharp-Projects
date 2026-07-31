@@ -8,11 +8,11 @@ using UI;
 
 namespace Services
 {
-    public class  ATMEngine : IATMEngine
+    public class ATMEngine : IATMEngine
     {
         // Dummy Account
         private readonly BankAccount[] _accounts;
-        private BankAccount _currentAccount;
+        private BankAccount? _currentAccount;
 
         // UI Helper
         private readonly MenuDisplay _menuDisplay;
@@ -37,18 +37,24 @@ namespace Services
         public void Start()
         {
             _menuDisplay.ShowWelcome();
+            bool isAuthenticated = false;
 
-            string accNum = _inputReader.ReadString("Enter Account Number: ");
-            string pin = _inputReader.ReadString("Enter 4-Digital pin: ");
+            while (!isAuthenticated)
+            {
+                // Yahan se null check hata diya hai!
+                string accNum = _inputReader.ReadString("Enter Account Number: ");
+                string pin = _inputReader.ReadString("Enter 4-Digit pin: ");
 
-            if (AuthenticateUser(accNum, pin))
-            {
-                _menuDisplay.ShowMessage($"\nLogin Successful! Welcome, {_currentAccount.AccountHolder.Name}.");
-                ShowMenu();
-            }
-            else
-            {
-                _menuDisplay.ShowError("Authentication Failed! Invalid Account Number or PIN.");
+                if (AuthenticateUser(accNum, pin))
+                {
+                    isAuthenticated = true;
+                    _menuDisplay.ShowMessage($"\nLogin Successful! Welcome, {_currentAccount!.AccountHolder.Name}.");
+                    ShowMenu();
+                }
+                else
+                {
+                    _menuDisplay.ShowError("Authentication Failed! Invalid Account Number or PIN.\n");
+                }
             }
         }
 
@@ -67,6 +73,13 @@ namespace Services
 
         public void ShowMenu()
         {
+            // First check user is logged in or not
+            if (_currentAccount == null)
+            {
+                _menuDisplay.ShowError("No active session found. Please log in first.");
+                return;
+            }
+
             bool isRunning = true;
 
             while (isRunning)
@@ -98,9 +111,16 @@ namespace Services
                 }
             }
         }
-        
+
         public void ProcessTransaction(ITransaction transaction)
         {
+            // First check user is logged in or not
+            if (_currentAccount == null)
+            {
+                _menuDisplay.ShowError("No active session found. Please log in first.");
+                return;
+            }
+
             try
             {
                 bool success = transaction.Execute(_currentAccount);
@@ -111,7 +131,7 @@ namespace Services
                     _menuDisplay.ShowMessage($"Updated Balance: ₹{_currentAccount.GetBalance()}");
                 }
             }
-            catch  (InsufficientFundsException ex)
+            catch (InsufficientFundsException ex)
             {
                 _menuDisplay.ShowError($"Transaction Failed: {ex.Message}");
             }
