@@ -4,6 +4,7 @@ using Exceptions;
 using Interfaces;
 using Models;
 using Transactions;
+using UI;
 
 namespace Services
 {
@@ -11,7 +12,7 @@ namespace Services
     {
         // Dummy Account
         private readonly BankAccount[] _accounts;
-        private BankAccount _currentAccount;
+        private BankAccount? _currentAccount;
 
         // UI Helper
         private readonly MenuDisplay _menuDisplay;
@@ -35,6 +36,13 @@ namespace Services
 
         public void Start()
         {
+            // first check user is logged in or not
+            if (_currentAccount == null)
+            {
+                _menuDisplay.ShowError("No active session found. Please log in first.");
+                return;
+            }
+
             _menuDisplay.ShowWelcome();
 
             string accNum = _inputReader.ReadString("Enter Account Number: ");
@@ -66,6 +74,13 @@ namespace Services
 
         public void ShowMenu()
         {
+            // first check user is logged in or not
+            if (_currentAccount == null)
+            {
+                _menuDisplay.ShowError("No active session found. Please log in first.");
+                return;
+            }
+
             bool isRunning = true;
 
             while (isRunning)
@@ -100,9 +115,16 @@ namespace Services
         
         public void ProcessTransaction(ITransaction transaction)
         {
+            // first check user is logged in or not
+            if (_currentAccount == null)
+            {
+                _menuDisplay.ShowError("No active session found. Please log in first.");
+                return;
+            }
+
             try
             {
-                bool success = transaction.Execute(_currentAccount);
+                bool success = transaction.Execute(_currentAccount!);
 
                 if (success)
                 {
