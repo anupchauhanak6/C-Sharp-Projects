@@ -2,14 +2,14 @@
 using Services;
 using static System.Console;
 
-class Program
+public class Program
 {
     public static void Main(string[] args)
     {
-            // Creating an instance of the ATM engine.
-            ATMEngine atmEngine = new ATMEngine();
+        // Creating an instance of the ATM engine.
+        ATMEngine atmEngine = new ATMEngine();
 
-            // Triggering the application flow.
-            atmEngine.Start();
+        // Triggering the application flow.
+        atmEngine.Start();
     }
 }
