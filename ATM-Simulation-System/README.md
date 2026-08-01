@@ -127,3 +127,78 @@ There is no automated test project yet. A practical next step is adding xUnit te
 - `ATMEngine` authentication and menu-driven flows
 - Transaction classes (`DepositTransaction`, `WithdrawTransaction`, `TransferTransaction`)
 - `BankAccount` debit/credit behavior and edge cases
+
+## Low-Level Design (LLD): ATM Simulation System
+```
++-----------------------------------------------------------------------------------+
+|                                 APPLICATION ENTRY                                 |
++-----------------------------------------------------------------------------------+
+|                                     Program                                       |
+|                                 + Main(string[])                                  |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+|                                  CORE SERVICE                                     |
++-----------------------------------------------------------------------------------+
+|  <<interface>>                                                                    |
+|  IATMEngine <------------------------------------+                                |
+|       ^                                          |                                |
+|       | Implements                               | Uses                           |
+|  ATMEngine                                       |                                |
+|  - _accounts: BankAccount[]                      |                                |
+|  - _currentAccount: BankAccount?                 |                                |
+|  - _menuDisplay: MenuDisplay                     |                                |
+|  - _inputReader: InputReader                     v                                |
++-----------------------------------------------------------------------------------+
+        |                                 TRANSACTIONS                              |
+        |                         +-------------------------------------------------+
+        |                         |  <<interface>>                                  |
+        |                         |  ITransaction                                   |
+        |                         |  + Execute(BankAccount): bool                   |
+        |                         +-------------------------------------------------+
+        |                                  ^               ^               ^        |
+        |                      Implements  |               |               |        |
+        |                         +--------+               |               |        |
+        |                         |                        |               |        |
+        |            DepositTransaction  WithdrawTransaction  TransferTransaction   |
+        |            + Amount            + Amount             + Amount              |
+        |                                                     + TargetAccount       |
+        |                                                                           |
+        v                                                                           v
++-----------------------------------+             +---------------------------------+
+|            UI HELPERS             |             |          DATA MODELS            |
++-----------------------------------+             +---------------------------------+
+|  MenuDisplay      InputReader     |             |  User          BankAccount      |
+|  + ShowWelcome()  + ReadString()  |             |  + UserId      + AccountNumber  |
+|  + ShowMainMenu() + ReadInt()     |             |  + Name        - _balance       |
+|  + ShowMessage()  + ReadDecimal() |             |  + Phone       - _atmPin        |
+|  + ShowSuccess()                  |             |                + AccountHolder  |
+|  + ShowError()                    |             |                                 |
++-----------------------------------+             +---------------------------------+
+                                                           |
+                                                           v
+                                                  +---------------------------------+
+                                                  |        CUSTOM EXCEPTIONS        |
+                                                  +---------------------------------+
+                                                  |  InsufficientFundsException     |
+                                                  |  InvalidPinException            |
+                                                  +---------------------------------+
+```
+
+## System Sequence Diagram (Withdrawal Execution Flow)
+```
+User          InputReader          ATMEngine         WithdrawTransaction       BankAccount
+ |                 |                   |                      |                     |
+ |-- Choose (3) -->|                   |                      |                     |
+ |-- Enter 500 --->|                   |                      |                     |
+ |                 |--- Return 500 --->|                      |                     |
+ |                 |                   |-- Create Object ---->|                     |
+ |                 |                   |-- ProcessTrans() --->|                     |
+ |                 |                   |                      |-- GetBalance() ---->|
+ |                 |                   |                      |<-- Balance (10000) -|
+ |                 |                   |                      |-- Debit(500) ------>|
+ |                 |                   |                      |<-- True ------------|
+ |                 |                   |<-- Return True ------|                     |
+ |<-- Success Msg -|-------------------|                      |                     |
+ ```
