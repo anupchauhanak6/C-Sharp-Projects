@@ -1,137 +1,129 @@
 # ATM Simulation System
 
-A console-based ATM simulation written in C# that demonstrates a layered, testable design using interfaces, domain models, service classes, and a small UI layer. This README gives a quick-start, usage examples, design notes, and development guidance.
+A clean, console-based ATM application in C# focused on object-oriented design, maintainability, and extensibility.
+
+## Why this project is strong
+
+- Layered design: **UI -> Service -> Domain**
+- Clear abstraction for transactions via `ITransaction`
+- Input validation at UI and transaction boundaries
+- Domain-specific error handling (`InsufficientFundsException`)
+- Easy path to add new transaction types
+
+## Tech stack
+
+| Item | Value |
+| --- | --- |
+| Language | C# |
+| Runtime | .NET 10 |
+| Project type | Console App |
+| Target framework | `net10.0` |
 
 ## Quick start
-
-1. Ensure .NET SDK 10.0 or later is installed.
-2. From the project root, build and run:
 
 ```bash
 dotnet build
 dotnet run
 ```
 
-The program runs as an interactive console application. Follow prompts to sign in and perform transactions.
+## Demo accounts
 
-## Features
+The app starts with in-memory seeded accounts in `ATMEngine`:
 
-- In-memory bank account and user models with PIN checks
-- Transactions implemented as interchangeable strategies: Deposit, Withdraw, Transfer
-- Simple console UI layer (`MenuDisplay`, `InputReader`) for user interaction
-- Domain-specific exceptions (`InsufficientFundsException`, `InvalidPinException`)
+| Account Number | PIN | Account Holder |
+| --- | --- | --- |
+| `ACC1001` | `1234` | Rahul Sharma |
+| `ACC1002` | `4321` | Priya Verma |
 
-## Requirements
+## Available operations
 
-- .NET SDK 10.0+ (project targets `net10.0`)
+- Authenticate with account number and PIN
+- Check balance
+- Deposit money
+- Withdraw money
+- Exit session
 
-## Usage and examples
+`TransferTransaction` is implemented in `Services/Transactions/TransferTransaction.cs`, but it is not currently connected to the main menu flow.
 
-- Start the app: `dotnet run`.
-- Authentication: supply the user ID and PIN when prompted.
-
-Example flow (user input shown after >):
+## Example run
 
 ```text
-Welcome to ATM
-Enter user id: > 1001
-Enter PIN: > 1234
-1) Check balance
-2) Deposit
-3) Withdraw
-4) Transfer
-5) Exit
-Choose: > 2
-Enter amount to deposit: > 250.00
-Deposit successful. New balance: 1250.00
+========================================
+    WELCOME TO ATM SIMULATION SYSTEM
+========================================
+
+Enter Account Number: ACC1001
+Enter 4-Digit pin: 1234
+
+----------------------------------------
+              MAIN MENU
+----------------------------------------
+1. Check Balance
+2. Deposit Money
+3. Withdraw Money
+4. Exit
+----------------------------------------
 ```
 
-Transactions validate inputs and throw domain exceptions for invalid operations. The engine catches and displays friendly messages for these exceptions.
+## Architecture overview
 
-## Design & architecture
+```text
+Program.cs
+  -> ATMEngine (service orchestration)
+      -> MenuDisplay + InputReader (UI)
+      -> BankAccount + User (domain models)
+      -> ITransaction implementations (business actions)
+```
 
-- Layered structure: UI → Services (ATMEngine) → Domain models
-- Open/Closed: transactions implement `ITransaction` so new types can be added without modifying engine logic
-- Single Responsibility: models hold data/validation, services perform orchestration, UI handles rendering and input
+### Core components
 
-### Key types
-
-- `BankAccount` — holds account id, owner, balance, and PIN check logic
-- `ITransaction` — contract for executing a transaction
-- `ATMEngine` — manages session, authentication, and invoking transactions
-
-## Error handling
-
-- `InsufficientFundsException` is thrown when withdrawing/transferring more than the balance
-- `InvalidPinException` is thrown for incorrect authentication
-
-The `ATMEngine` or top-level UI should catch these and display user-friendly messages rather than crashing.
+- `Program.cs`: application entry point
+- `Services/ATMEngine.cs`: authentication, menu loop, transaction execution
+- `Models/BankAccount.cs`: PIN validation, debit/credit, balance state
+- `Models/User.cs`: account holder identity data
+- `Interfaces/ITransaction.cs`: transaction contract (`Execute`)
+- `Services/Transactions/*`: deposit, withdraw, transfer strategies
+- `UI/MenuDisplay.cs`: menu and styled messages
+- `UI/InputReader.cs`: safe console input parsing
+- `Exceptions/InsufficientFundsException.cs`: domain error for invalid withdrawal/transfer balance
 
 ## Project structure
 
-The repository layout (for quick reference):
-
-```
-ATM.ConsoleApp/
-│
-├── 📁 Models/                      --> Domain Data Classes (Encapsulation)
-│   ├── BankAccount.cs              --> Account data, Balance, PIN checks
-│   └── User.cs                     --> User profile details (Name, ID)
-│
-├── 📁 Interfaces/                  --> Architectural Contracts (Abstraction)
-│   ├── ITransaction.cs             --> Execution contract for all transactions
-│   └── IATMEngine.cs               --> Contract for ATM operations
-│
-├── 📁 Services/                    --> Core Logic & Polymorphism
-│   ├── ATMEngine.cs                --> ATM lifecycle & user flow manager
-│   └── Transactions/               --> Specific transaction strategies
-│       ├── DepositTransaction.cs   --> Deposit implementation
-│       ├── WithdrawTransaction.cs  --> Withdrawal implementation
-│       └── TransferTransaction.cs  --> Account-to-Account transfer logic
-│
-├── 📁 UI/                          --> User Interaction Layer
-│   ├── MenuDisplay.cs              --> Screen rendering & menu options
-│   └── InputReader.cs              --> User inputs validation & reading
-│
-├── 📁 Exceptions/                  --> Custom Application Errors
-│   ├── InsufficientFundsException.cs
-│   └── InvalidPinException.cs
-│
-└── Program.cs                      --> Entry Point (App Bootstrapper)
+```text
+ATM-Simulation-System/
+├── 📁 Exceptions/
+│   └── InsufficientFundsException.cs
+├── 📁 Interfaces/
+│   ├── IATMEngine.cs
+│   └── ITransaction.cs
+├── 📁 Models/
+│   ├── BankAccount.cs
+│   └── User.cs
+├── 📁 Services/
+│   ├── ATMEngine.cs
+│   └── Transactions/
+│       ├── DepositTransaction.cs
+│       ├── TransferTransaction.cs
+│       └── WithdrawTransaction.cs
+├── 📁 UI/
+|   ├── InputReader.cs
+|   └── MenuDisplay.cs
+├── ATM-Simulation-System.csproj
+└── Program.cs
 ```
 
-## Development notes
+## Extend the system
 
-- Add a new transaction:
-  1.  Implement `ITransaction`.
-  2.  Add the concrete class under `Services/Transactions`.
-  3.  Register or instantiate it where the engine chooses transactions (search for transaction factory/selector in `ATMEngine`).
+To add a new transaction:
 
-- Replace in-memory storage with persistence by introducing a repository interface (e.g., `IAccountRepository`) and swapping implementations for tests vs production.
+1. Create a class under `Services/Transactions/` implementing `ITransaction`.
+2. Add validation and account logic inside `Execute(...)`.
+3. Add a menu option in `ATMEngine.ShowMenu()` and call `ProcessTransaction(...)`.
 
-## Testing
+## Testing status
 
-There are no tests included by default. To add tests, create an xUnit or NUnit test project and target the service classes (`ATMEngine`) and individual transaction implementations.
+There is no automated test project yet. A practical next step is adding xUnit tests for:
 
-Example: create test project and run tests
-
-```bash
-dotnet new xunit -o tests/ATM.Tests
-dotnet add tests/ATM.Tests reference ATM-Simulation-System.csproj
-dotnet test
-```
-
-## Contributing
-
-- Fork, create a topic branch, and open a pull request with a clear description.
-- Add unit tests for new behavior and keep changes focused.
-
-If you want, I can also:
-
-- Add a sample seed data loader and quick-start accounts in `Program.cs`.
-- Create a test project with unit tests for `ATMEngine` and transactions.
-- Add a `Makefile` or PowerShell script for common development commands.
-
-## License
-
-This project does not include a license file. If you want one, I can add a permissive `MIT` license or another license you choose.
+- `ATMEngine` authentication and menu-driven flows
+- Transaction classes (`DepositTransaction`, `WithdrawTransaction`, `TransferTransaction`)
+- `BankAccount` debit/credit behavior and edge cases
