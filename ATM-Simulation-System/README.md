@@ -182,7 +182,6 @@ There is no automated test project yet. A practical next step is adding xUnit te
                                                   |        CUSTOM EXCEPTIONS        |
                                                   +---------------------------------+
                                                   |  InsufficientFundsException     |
-                                                  |  InvalidPinException            |
                                                   +---------------------------------+
 ```
 
