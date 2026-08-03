@@ -128,7 +128,7 @@ There is no automated test project yet. A practical next step is adding xUnit te
 - Transaction classes (`DepositTransaction`, `WithdrawTransaction`, `TransferTransaction`)
 - `BankAccount` debit/credit behavior and edge cases
 
-## Low-Level Design (LLD): ATM Simulation System
+## ATM Simulation System
 ```
 +-----------------------------------------------------------------------------------+
 |                                 APPLICATION ENTRY                                 |
